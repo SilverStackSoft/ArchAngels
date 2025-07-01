@@ -1075,9 +1075,12 @@
         let isAdminAuthenticated = false;
         let editingProductId = null;
 
-        // Initialize the page
+        // Initialize the page after DOM is loaded
         document.addEventListener('DOMContentLoaded', function() {
-            renderProducts();
+            // Ensure elements exist before accessing them
+            if (document.getElementById('products-container')) {
+                renderProducts();
+            }
             updateNavbar();
             
             // If no products exist, add sample products
@@ -1121,7 +1124,9 @@
             localStorage.setItem('frameProducts', JSON.stringify(products));
             localStorage.setItem('frameAvailability', JSON.stringify(availability));
             
-            renderProducts();
+            if (document.getElementById('products-container')) {
+                renderProducts();
+            }
         }
         
         // Generate sample future dates
@@ -1140,13 +1145,23 @@
 
         // ================ NAVIGATION ================ 
         function showSection(sectionId) {
-            document.getElementById('home-section').style.display = sectionId === 'home' || sectionId === 'gallery' ? 'block' : 'none';
-            document.getElementById('booking-section').style.display = sectionId === 'booking' ? 'block' : 'none';
-            document.getElementById('admin-section').style.display = sectionId === 'admin' ? 'block' : 'none';
+            if (document.getElementById('home-section')) {
+                document.getElementById('home-section').style.display = sectionId === 'home' || sectionId === 'gallery' ? 'block' : 'none';
+            }
+            if (document.getElementById('booking-section')) {
+                document.getElementById('booking-section').style.display = sectionId === 'booking' ? 'block' : 'none';
+            }
+            if (document.getElementById('admin-section')) {
+                document.getElementById('admin-section').style.display = sectionId === 'admin' ? 'block' : 'none';
+            }
             
             if (sectionId === 'admin') {
-                document.getElementById('admin-content').style.display = 'none';
-                document.getElementById('admin-password').value = '';
+                if (document.getElementById('admin-content')) {
+                    document.getElementById('admin-content').style.display = 'none';
+                }
+                if (document.getElementById('admin-password')) {
+                    document.getElementById('admin-password').value = '';
+                }
             }
             
             window.scrollTo(0, 0);
@@ -1154,6 +1169,8 @@
 
         function updateNavbar() {
             const navbar = document.getElementById('navbar');
+            if (!navbar) return;
+            
             window.addEventListener('scroll', function() {
                 if (window.scrollY > 50) {
                     navbar.classList.add('scrolled');
@@ -1166,6 +1183,8 @@
         // ================ BOOKING SYSTEM ================ 
         function renderProducts() {
             const container = document.getElementById('products-container');
+            if (!container) return;
+            
             container.innerHTML = '';
             
             if (products.length === 0) {
@@ -1217,20 +1236,30 @@
             }
             
             currentBooking.productId = productId;
-            document.getElementById('modal-title').textContent = `Book ${products.find(p => p.id === productId).name}`;
+            if (document.getElementById('modal-title')) {
+                document.getElementById('modal-title').textContent = `Book ${products.find(p => p.id === productId).name}`;
+            }
             renderCalendar(productId);
-            document.getElementById('booking-modal').style.display = 'block';
+            if (document.getElementById('booking-modal')) {
+                document.getElementById('booking-modal').style.display = 'block';
+            }
             document.body.style.overflow = 'hidden';
         }
 
         function closeModal() {
-            document.getElementById('booking-modal').style.display = 'none';
+            if (document.getElementById('booking-modal')) {
+                document.getElementById('booking-modal').style.display = 'none';
+            }
             document.body.style.overflow = 'auto';
-            document.getElementById('form-messages').innerHTML = '';
+            if (document.getElementById('form-messages')) {
+                document.getElementById('form-messages').innerHTML = '';
+            }
         }
 
         function renderCalendar(productId) {
             const calendar = document.getElementById('calendar');
+            if (!calendar) return;
+            
             calendar.innerHTML = '';
             
             // Calendar headers
@@ -1299,10 +1328,10 @@
                 return;
             }
             
-            const name = document.getElementById('customer-name').value;
-            const email = document.getElementById('customer-email').value;
-            const phone = document.getElementById('customer-phone').value;
-            const details = document.getElementById('event-details').value;
+            const name = document.getElementById('customer-name') ? document.getElementById('customer-name').value : '';
+            const email = document.getElementById('customer-email') ? document.getElementById('customer-email').value : '';
+            const phone = document.getElementById('customer-phone') ? document.getElementById('customer-phone').value : '';
+            const details = document.getElementById('event-details') ? document.getElementById('event-details').value : '';
             
             if (!name || !email || !phone) {
                 showMessage('Please fill in all required fields', 'error');
@@ -1310,8 +1339,10 @@
             }
             
             // Show loading
-            document.getElementById('submit-text').style.display = 'none';
-            document.getElementById('submit-loading').style.display = 'inline-block';
+            if (document.getElementById('submit-text') && document.getElementById('submit-loading')) {
+                document.getElementById('submit-text').style.display = 'none';
+                document.getElementById('submit-loading').style.display = 'inline-block';
+            }
             
             // Find product
             const product = products.find(p => p.id === currentBooking.productId);
@@ -1322,20 +1353,26 @@
                 showMessage('Booking request sent successfully! We will contact you shortly to confirm.', 'success');
                 
                 // Reset form
-                document.getElementById('booking-form').reset();
+                if (document.getElementById('booking-form')) {
+                    document.getElementById('booking-form').reset();
+                }
                 currentBooking.date = null;
                 
                 // Hide modal after success
                 setTimeout(() => {
                     closeModal();
-                    document.getElementById('submit-text').style.display = 'inline-block';
-                    document.getElementById('submit-loading').style.display = 'none';
+                    if (document.getElementById('submit-text') && document.getElementById('submit-loading')) {
+                        document.getElementById('submit-text').style.display = 'inline-block';
+                        document.getElementById('submit-loading').style.display = 'none';
+                    }
                 }, 3000);
             }, 1500);
         }
 
         function showMessage(text, type) {
             const messages = document.getElementById('form-messages');
+            if (!messages) return;
+            
             const message = document.createElement('div');
             message.className = type === 'success' ? 'success-message' : 'error-message';
             message.textContent = text;
@@ -1345,18 +1382,31 @@
 
         // ================ ADMIN SYSTEM ================ 
         function authenticateAdmin() {
-            const password = document.getElementById('admin-password').value;
+            const loginText = document.getElementById('login-text');
+            const loginLoading = document.getElementById('login-loading');
+            const passwordInput = document.getElementById('admin-password');
+            
+            if (!loginText || !loginLoading || !passwordInput) {
+                alert('System error: Admin elements not found');
+                return;
+            }
+            
+            const password = passwordInput.value;
             
             // Show loading
-            document.getElementById('login-text').style.display = 'none';
-            document.getElementById('login-loading').style.display = 'inline-block';
+            loginText.style.display = 'none';
+            loginLoading.style.display = 'inline-block';
             
             // Simulate authentication
             setTimeout(() => {
                 if (password === "admin123") {
                     isAdminAuthenticated = true;
-                    document.getElementById('admin-login').style.display = 'none';
-                    document.getElementById('admin-content').style.display = 'block';
+                    if (document.getElementById('admin-login')) {
+                        document.getElementById('admin-login').style.display = 'none';
+                    }
+                    if (document.getElementById('admin-content')) {
+                        document.getElementById('admin-content').style.display = 'block';
+                    }
                     renderAdminProducts();
                     populateAvailabilityProducts();
                 } else {
@@ -1364,21 +1414,29 @@
                 }
                 
                 // Hide loading
-                document.getElementById('login-text').style.display = 'inline-block';
-                document.getElementById('login-loading').style.display = 'none';
+                loginText.style.display = 'inline-block';
+                loginLoading.style.display = 'none';
             }, 1000);
         }
         
         function logoutAdmin() {
             isAdminAuthenticated = false;
-            document.getElementById('admin-content').style.display = 'none';
-            document.getElementById('admin-login').style.display = 'block';
-            document.getElementById('admin-password').value = '';
+            if (document.getElementById('admin-content')) {
+                document.getElementById('admin-content').style.display = 'none';
+            }
+            if (document.getElementById('admin-login')) {
+                document.getElementById('admin-login').style.display = 'block';
+            }
+            if (document.getElementById('admin-password')) {
+                document.getElementById('admin-password').value = '';
+            }
             cancelEdit();
         }
 
         function renderAdminProducts() {
             const container = document.getElementById('admin-product-list');
+            if (!container) return;
+            
             container.innerHTML = '';
             
             products.forEach(product => {
@@ -1399,6 +1457,8 @@
 
         function populateAvailabilityProducts() {
             const select = document.getElementById('availability-product');
+            if (!select) return;
+            
             select.innerHTML = '';
             
             products.forEach(product => {
@@ -1414,15 +1474,29 @@
             if (!product) return;
             
             // Populate form
-            document.getElementById('product-name').value = product.name;
-            document.getElementById('product-price').value = product.price;
-            document.getElementById('product-colors').value = product.colors.join(',');
-            document.getElementById('product-description').value = product.description;
+            if (document.getElementById('product-name')) {
+                document.getElementById('product-name').value = product.name;
+            }
+            if (document.getElementById('product-price')) {
+                document.getElementById('product-price').value = product.price;
+            }
+            if (document.getElementById('product-colors')) {
+                document.getElementById('product-colors').value = product.colors.join(',');
+            }
+            if (document.getElementById('product-description')) {
+                document.getElementById('product-description').value = product.description;
+            }
             
             // Change button to update mode
-            document.getElementById('product-action-btn').textContent = 'Update Product';
-            document.getElementById('product-action-btn').setAttribute('onclick', `updateProduct(${productId})`);
-            document.getElementById('cancel-edit-btn').style.display = 'block';
+            const actionBtn = document.getElementById('product-action-btn');
+            if (actionBtn) {
+                actionBtn.textContent = 'Update Product';
+                actionBtn.setAttribute('onclick', `updateProduct(${productId})`);
+            }
+            const cancelBtn = document.getElementById('cancel-edit-btn');
+            if (cancelBtn) {
+                cancelBtn.style.display = 'block';
+            }
             
             // Store editing state
             editingProductId = productId;
@@ -1430,24 +1504,38 @@
 
         function cancelEdit() {
             // Reset form
-            document.getElementById('product-name').value = '';
-            document.getElementById('product-price').value = '';
-            document.getElementById('product-colors').value = '';
-            document.getElementById('product-description').value = '';
+            if (document.getElementById('product-name')) {
+                document.getElementById('product-name').value = '';
+            }
+            if (document.getElementById('product-price')) {
+                document.getElementById('product-price').value = '';
+            }
+            if (document.getElementById('product-colors')) {
+                document.getElementById('product-colors').value = '';
+            }
+            if (document.getElementById('product-description')) {
+                document.getElementById('product-description').value = '';
+            }
             
             // Reset button to add mode
-            document.getElementById('product-action-btn').textContent = 'Add Product';
-            document.getElementById('product-action-btn').setAttribute('onclick', 'addProduct()');
-            document.getElementById('cancel-edit-btn').style.display = 'none';
+            const actionBtn = document.getElementById('product-action-btn');
+            if (actionBtn) {
+                actionBtn.textContent = 'Add Product';
+                actionBtn.setAttribute('onclick', 'addProduct()');
+            }
+            const cancelBtn = document.getElementById('cancel-edit-btn');
+            if (cancelBtn) {
+                cancelBtn.style.display = 'none';
+            }
             
             editingProductId = null;
         }
 
         function addProduct() {
-            const name = document.getElementById('product-name').value;
-            const price = parseFloat(document.getElementById('product-price').value);
-            const colors = document.getElementById('product-colors').value.split(',');
-            const description = document.getElementById('product-description').value;
+            const name = document.getElementById('product-name') ? document.getElementById('product-name').value : '';
+            const price = document.getElementById('product-price') ? parseFloat(document.getElementById('product-price').value) : 0;
+            const colors = document.getElementById('product-colors') ? document.getElementById('product-colors').value.split(',') : [];
+            const description = document.getElementById('product-description') ? document.getElementById('product-description').value : '';
             
             if (!name || !price || colors.length === 0 || !description) {
                 alert('Please fill in all fields');
@@ -1484,10 +1572,10 @@
         }
 
         function updateProduct(productId) {
-            const name = document.getElementById('product-name').value;
-            const price = parseFloat(document.getElementById('product-price').value);
-            const colors = document.getElementById('product-colors').value.split(',');
-            const description = document.getElementById('product-description').value;
+            const name = document.getElementById('product-name') ? document.getElementById('product-name').value : '';
+            const price = document.getElementById('product-price') ? parseFloat(document.getElementById('product-price').value) : 0;
+            const colors = document.getElementById('product-colors') ? document.getElementById('product-colors').value.split(',') : [];
+            const description = document.getElementById('product-description') ? document.getElementById('product-description').value : '';
             
             if (!name || !price || colors.length === 0 || !description) {
                 alert('Please fill in all fields');
@@ -1534,9 +1622,9 @@
         }
 
         function updateAvailability() {
-            const productId = parseInt(document.getElementById('availability-product').value);
-            const date = document.getElementById('availability-date').value;
-            const status = document.getElementById('availability-status').value;
+            const productId = document.getElementById('availability-product') ? parseInt(document.getElementById('availability-product').value) : 0;
+            const date = document.getElementById('availability-date') ? document.getElementById('availability-date').value : '';
+            const status = document.getElementById('availability-status') ? document.getElementById('availability-status').value : '';
             
             if (!productId || !date) {
                 alert('Please select a product and date');
